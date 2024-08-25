@@ -1,0 +1,34 @@
+version: "3"
+services:
+  db:
+    image: postgres:12
+    ports:
+      - ${DB_PORT}:5432
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+  vault:
+    image: hashicorp/vault
+    restart: on-failure:10
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - ${VAULT_PORT}:8200
+    command: server
+    volumes:
+      - vault-data:/vault/file
+      - $PWD/config.dev.hcl:/vault/config/config.hcl
+  redis:
+    container_name: ${REDIS_HOST}
+    image: redis:7
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - redis:/data
+volumes:
+  postgres: ~
+  vault-data: ~
+  redis:
+    driver: local
